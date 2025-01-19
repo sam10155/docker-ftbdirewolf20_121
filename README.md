@@ -1,3 +1,4 @@
+### Fork of Goobaroo's [repo](https://github.com/Goobaroo/docker-ftbdirewolf20_121)
 # [FTB Presents Direwolf20 1.21](https://feed-the-beast.com/modpack/126-ftb_presents_direwolf20_1_21) By FTB
 
 <!-- toc -->
@@ -39,6 +40,7 @@ These environment variables can be set at run time to override their defaults.
 * JVM_OPTS "-Xms4096m -Xmx6144m"
 * MOTD "FTB Presents Direwolf20 1.21 Server Powered by Docker"
 * LEVEL world
+* VER 100011 <--- Modpack ID from [here](https://www.feed-the-beast.com/modpacks/server-files)
 
 ### Adding Minecraft Operators
 
@@ -59,6 +61,6 @@ This container is designed for [Unraid](https://unraid.net) so the user in the c
 If the install is incomplete for some reason.  Deleting the downloaded server file in /data will restart the install/upgrade process.
 
 ## Source
-Github: https://github.com/Goobaroo/docker-ftbdirewolf20_121
+Github: https://github.com/sam10155/docker-ftbdirewolf20_121
 
-Docker: https://hub.docker.com/repository/docker/goobaroo/ftbdirewolf20_121
+Docker: https://hub.docker.com/r/sam10155/ftbdirewolf20_121
