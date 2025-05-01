@@ -40,7 +40,7 @@ These environment variables can be set at run time to override their defaults.
 * JVM_OPTS "-Xms4096m -Xmx6144m"
 * MOTD "FTB Presents Direwolf20 1.21 Server Powered by Docker"
 * LEVEL world
-* VER 100011 <--- Modpack ID from [here](https://www.feed-the-beast.com/modpacks/server-files)
+* VER 100062 <--- Modpack ID from [here](https://www.feed-the-beast.com/modpacks/server-files)
 
 ### Adding Minecraft Operators
 
