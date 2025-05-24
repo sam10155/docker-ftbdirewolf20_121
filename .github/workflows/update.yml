@@ -19,7 +19,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python deps
-        run: pip install requests beautifulsoup4
+        run: pip install os requests beautifulsoup4
 
       - name: Check and update Dockerfile
         id: check_update
@@ -27,6 +27,7 @@ jobs:
           python3 - <<EOF
           import re
           import requests
+          import os
           from bs4 import BeautifulSoup
           from pathlib import Path
 
@@ -38,24 +39,27 @@ jobs:
           res = requests.get(url)
           soup = BeautifulSoup(res.text, "html.parser")
           ver = soup.find("div", class_="Badge_value__1GilC").text.strip()
-
-          # Compare with current
+          
+          # Compare with current  
           current = version_path.read_text().strip() if version_path.exists() else ""
           if ver == current:
-              print("::set-output name=updated::false")
-              exit(0)
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("updated=false\n")
+            exit(0)
 
-          # Update Dockerfile with VER
+          # Update Dockerfile with new VER
           dockerfile = dockerfile_path.read_text()
           updated_dockerfile = re.sub(r'^ENV VER=\d+', f'ENV VER={ver}', dockerfile, flags=re.M)
 
           if dockerfile != updated_dockerfile:
-              dockerfile_path.write_text(updated_dockerfile)
-              version_path.write_text(ver)
-              print("::set-output name=updated::true")
-              print(f"::set-output name=version::{ver}")
+            dockerfile_path.write_text(updated_dockerfile)
+            version_path.write_text(ver)
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("updated=true\n")
+              f.write(f"version={ver}\n")
           else:
-              print("::set-output name=updated::false")
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("updated=false\n")
           EOF
 
       - name: Commit updated Dockerfile
