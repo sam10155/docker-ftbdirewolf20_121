@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -72,9 +74,12 @@ jobs:
 
       - name: Commit updated Dockerfile
         if: steps.check_update.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name "sam10155"
+          git config user.email "36243971+sam10155@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
           git commit -am "Update modpack VER to ${{ steps.check_update.outputs.version }}"
           git push
 
