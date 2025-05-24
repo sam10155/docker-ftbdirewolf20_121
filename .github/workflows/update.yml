@@ -19,7 +19,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python deps
-        run: pip install os requests beautifulsoup4
+        run: pip install requests beautifulsoup4
 
       - name: Check and update Dockerfile
         id: check_update
