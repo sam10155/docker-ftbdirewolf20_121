@@ -40,10 +40,14 @@ jobs:
           res = requests.get(url)
           soup = BeautifulSoup(res.text, "html.parser")
           ver = soup.find("div", class_="Badge_value__1GilC").text.strip()
+          print(f"Latest version found: {ver}")
           
           # Compare with current  
           current = version_path.read_text().strip() if version_path.exists() else ""
+          print(f"Current version in VERSION file: {current or 'None'}")
+          
           if ver == current:
+            print("✅ No update needed. Modpack version unchanged.")
             with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write("updated=false\n")
             exit(0)
@@ -53,12 +57,14 @@ jobs:
           updated_dockerfile = re.sub(r'^ENV VER=\d+', f'ENV VER={ver}', dockerfile, flags=re.M)
 
           if dockerfile != updated_dockerfile:
+            print("🔄 Updating Dockerfile and VERSION file with new version...")
             dockerfile_path.write_text(updated_dockerfile)
             version_path.write_text(ver)
             with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write("updated=true\n")
               f.write(f"version={ver}\n")
           else:
+            print("⚠️ Dockerfile content already up to date, no changes written.")
             with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write("updated=false\n")
           EOF
