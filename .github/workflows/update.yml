@@ -2,7 +2,8 @@ name: Auto Update and Push Docker Image
 
 on:
   schedule:
-    - cron: "0 */6 * * *"  # Every 6 hours
+    - cron: "0 0,12 * * *"  # At 00:00 and 12:00 UTC
+  push:
   workflow_dispatch:
 
 jobs:
