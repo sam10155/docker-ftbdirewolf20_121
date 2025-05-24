@@ -42,8 +42,10 @@ jobs:
           ver = soup.find("div", class_="Badge_value__1GilC").text.strip()
           print(f"Latest version found: {ver}")
           
-          # Compare with current  
-          current = version_path.read_text().strip() if version_path.exists() else ""
+          # Compare with current
+          dockerfile = dockerfile_path.read_text()
+          match = re.search(r'^ENV VER=(\d+)', dockerfile, flags=re.M)
+          current = match.group(1) if match else ""
           print(f"Current version in VERSION file: {current or 'None'}")
           
           if ver == current:
@@ -52,8 +54,7 @@ jobs:
               f.write("updated=false\n")
             exit(0)
 
-          # Update Dockerfile with new VER
-          dockerfile = dockerfile_path.read_text()
+          # Update Dockerfile with new VER ID
           updated_dockerfile = re.sub(r'^ENV VER=\d+', f'ENV VER={ver}', dockerfile, flags=re.M)
 
           if dockerfile != updated_dockerfile:
