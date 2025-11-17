@@ -41,14 +41,36 @@ jobs:
           # Scrape version
           res = requests.get(url)
           soup = BeautifulSoup(res.text, "html.parser")
-          ver = soup.find("div", class_="Badge_value__1GilC").text.strip()
+
+          # More robust version detection - finds any div with a class containing "value" 
+          # that contains only digits
+          ver = None
+          for div in soup.find_all("div"):
+              class_list = div.get("class", [])
+              if any("value" in c.lower() for c in class_list):
+                  text = div.text.strip()
+                  if text.isdigit():
+                      ver = text
+                      break
+
+          # Fallback: search for 6-digit numbers in the page that look like version IDs
+          if not ver:
+              version_pattern = r'\b(1000\d{2})\b'
+              matches = re.findall(version_pattern, res.text)
+              if matches:
+                  ver = matches[0]
+
+          if not ver:
+              print("❌ Could not find version number on the page")
+              exit(1)
+
           print(f"Latest version found: {ver}")
           
           # Compare with current
           dockerfile = dockerfile_path.read_text()
           match = re.search(r'^ENV VER=(\d+)', dockerfile, flags=re.M)
           current = match.group(1) if match else ""
-          print(f"Current version in VERSION file: {current or 'None'}")
+          print(f"Current version in Dockerfile: {current or 'None'}")
           
           if ver == current:
             print("✅ No update needed. Modpack version unchanged.")
