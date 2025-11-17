@@ -42,16 +42,23 @@ jobs:
           res = requests.get(url)
           soup = BeautifulSoup(res.text, "html.parser")
 
-          # More robust version detection - finds any div with a class containing "value" 
-          # that contains only digits
+          # Finds the badge with "Latest Version ID" label
           ver = None
           for div in soup.find_all("div"):
               class_list = div.get("class", [])
-              if any("value" in c.lower() for c in class_list):
-                  text = div.text.strip()
-                  if text.isdigit():
-                      ver = text
-                      break
+              class_str = " ".join(class_list).lower()
+              # Look for badge containers
+              if "badge" in class_str:
+                  # Check if this badge has a "name" div with "Latest Version ID" text
+                  name_div = div.find("div", string=lambda text: text and "version id" in text.lower())
+                  if name_div:
+                      # Find the sibling "value" div
+                      value_div = div.find("div", class_=lambda x: x and any("value" in c.lower() for c in x))
+                      if value_div:
+                          text = value_div.text.strip()
+                          if text.isdigit():
+                              ver = text
+                              break
 
           # Fallback: search for 6-digit numbers in the page that look like version IDs
           if not ver:
