@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM openjdk:21-jdk-buster
+FROM eclipse-temurin:21-jdk
 
 RUN apt-get update && apt-get install -y curl && \
  adduser --uid 99 --gid 100 --home /data --disabled-password minecraft
