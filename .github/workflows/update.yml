@@ -38,6 +38,10 @@ jobs:
           version_path = Path("VERSION")
           
           res = requests.get(url)
+
+          print("---- DEBUG HTML START ----")
+          print(res.text[:5000])
+          print("---- DEBUG HTML END ----")
           
           # Extract version ID from embedded Next.js JSON
           match = re.search(r'"latestVersionId":\s*(\d+)', res.text)
