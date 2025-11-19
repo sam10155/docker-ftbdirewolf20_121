@@ -31,74 +31,45 @@ jobs:
           import re
           import requests
           import os
-          from bs4 import BeautifulSoup
           from pathlib import Path
-
+          
           url = "https://www.feed-the-beast.com/modpacks/126-ftb-presents-direwolf20-121"
           dockerfile_path = Path("Dockerfile")
           version_path = Path("VERSION")
-
-          # Scrape version
+          
           res = requests.get(url)
-          soup = BeautifulSoup(res.text, "html.parser")
-
-          # Finds the badge with "Latest Version ID" label
-          ver = None
-          for div in soup.find_all("div"):
-              class_list = div.get("class", [])
-              class_str = " ".join(class_list).lower()
-              # Look for badge containers
-              if "badge" in class_str:
-                  # Check if this badge has a "name" div with "Latest Version ID" text
-                  name_div = div.find("div", string=lambda text: text and "version id" in text.lower())
-                  if name_div:
-                      # Find the sibling "value" div
-                      value_div = div.find("div", class_=lambda x: x and any("value" in c.lower() for c in x))
-                      if value_div:
-                          text = value_div.text.strip()
-                          if text.isdigit():
-                              ver = text
-                              break
-
-          # Fallback: search for 6-digit numbers in the page that look like version IDs
+          
+          # Extract version ID from embedded Next.js JSON
+          match = re.search(r'"latestVersionId":\s*(\d+)', res.text)
+          ver = match.group(1) if match else None
+          
           if not ver:
-              version_pattern = r'\b(1000\d{2})\b'
-              matches = re.findall(version_pattern, res.text)
-              if matches:
-                  ver = matches[0]
-
-          if not ver:
-              print("❌ Could not find version number on the page")
+              print("❌ Could not find version ID in page JSON")
               exit(1)
-
+          
           print(f"Latest version found: {ver}")
           
           # Compare with current
           dockerfile = dockerfile_path.read_text()
           match = re.search(r'^ENV VER=(\d+)', dockerfile, flags=re.M)
           current = match.group(1) if match else ""
+          
           print(f"Current version in Dockerfile: {current or 'None'}")
           
           if ver == current:
-            print("✅ No update needed. Modpack version unchanged.")
-            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write("updated=false\n")
-            exit(0)
-
-          # Update Dockerfile with new VER ID
+              print("✅ No update needed. Modpack version unchanged.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("updated=false\n")
+              exit(0)
+          
+          # Update Dockerfile + VERSION
           updated_dockerfile = re.sub(r'^ENV VER=\d+', f'ENV VER={ver}', dockerfile, flags=re.M)
-
-          if dockerfile != updated_dockerfile:
-            print("🔄 Updating Dockerfile and VERSION file with new version...")
-            dockerfile_path.write_text(updated_dockerfile)
-            version_path.write_text(ver)
-            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+          dockerfile_path.write_text(updated_dockerfile)
+          version_path.write_text(ver)
+          
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write("updated=true\n")
               f.write(f"version={ver}\n")
-          else:
-            print("⚠️ Dockerfile content already up to date, no changes written.")
-            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write("updated=false\n")
           EOF
 
       - name: Commit updated Dockerfile
