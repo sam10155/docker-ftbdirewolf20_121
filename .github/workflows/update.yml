@@ -32,48 +32,43 @@ jobs:
           import requests
           import os
           from pathlib import Path
-          
+
           url = "https://www.feed-the-beast.com/modpacks/126-ftb-presents-direwolf20-121"
           dockerfile_path = Path("Dockerfile")
           version_path = Path("VERSION")
-          
+
           res = requests.get(url)
 
-          print("---- DEBUG HTML START ----")
-          print(res.text[:5000])
-          print("---- DEBUG HTML END ----")
-          
-          # Extract version ID from embedded Next.js JSON
-          match = re.search(r'"latestVersionId":\s*(\d+)', res.text)
+          # Strip HTML tags and search for 'Latest Version ID <number>'
+          clean = re.sub(r'<[^>]+>', ' ', res.text)
+          match = re.search(r'Latest\s+Version\s+ID\s+(\d+)', clean, flags=re.I)
           ver = match.group(1) if match else None
-          
+
           if not ver:
-              print("❌ Could not find version ID in page JSON")
+              print("❌ Could not find version ID near 'Latest Version ID'")
               exit(1)
-          
+
           print(f"Latest version found: {ver}")
-          
-          # Compare with current
+
           dockerfile = dockerfile_path.read_text()
           match = re.search(r'^ENV VER=(\d+)', dockerfile, flags=re.M)
           current = match.group(1) if match else ""
-          
+
           print(f"Current version in Dockerfile: {current or 'None'}")
-          
+
           if ver == current:
-              print("✅ No update needed. Modpack version unchanged.")
-              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-                  f.write("updated=false\n")
-              exit(0)
-          
-          # Update Dockerfile + VERSION
+            print("✅ No update needed. Modpack version unchanged.")
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("updated=false\n")
+            exit(0)
+
           updated_dockerfile = re.sub(r'^ENV VER=\d+', f'ENV VER={ver}', dockerfile, flags=re.M)
           dockerfile_path.write_text(updated_dockerfile)
           version_path.write_text(ver)
-          
+
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write("updated=true\n")
-              f.write(f"version={ver}\n")
+            f.write("updated=true\n")
+            f.write(f"version={ver}\n")
           EOF
 
       - name: Commit updated Dockerfile
