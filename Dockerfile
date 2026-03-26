@@ -18,6 +18,6 @@ EXPOSE 25565/tcp
 ENV MOTD="FTB Presents Direwolf20 1.21 Server Powered by Docker"
 ENV LEVEL=world
 ENV JVM_OPTS="-Xms4096m -Xmx6144m"
-ENV VER=100172
+ENV VER=100236
 
 CMD ["/launch.sh"]
